@@ -1,0 +1,162 @@
+# Claude Duet API - FastAPI + uvicorn on 8787.
+#
+# replicas is 1 on purpose. The encrypted credential vault lives on the
+# ReadWriteOnce PVC mounted at /app/.data, so scaling out needs either a
+# ReadWriteMany volume or the vault moved into a secret manager first.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: duet-api
+  namespace: claude-duet
+  labels:
+    app.kubernetes.io/name: duet-api
+    app.kubernetes.io/part-of: claude-duet
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: duet-api
+  ports:
+    - name: http
+      port: 8787
+      targetPort: http
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: duet-api-data
+  namespace: claude-duet
+  labels:
+    app.kubernetes.io/name: duet-api
+    app.kubernetes.io/part-of: claude-duet
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: duet-api
+  namespace: claude-duet
+  labels:
+    app.kubernetes.io/name: duet-api
+    app.kubernetes.io/part-of: claude-duet
+spec:
+  replicas: 1
+  strategy:
+    # Recreate, not RollingUpdate: a ReadWriteOnce PVC cannot be mounted by the
+    # old and new pod at the same time.
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: duet-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: duet-api
+        app.kubernetes.io/part-of: claude-duet
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001        # the `duet` user created in apps/api/Dockerfile
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        # Nothing starts until Postgres answers, so the first schema create
+        # does not race an empty cluster.
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h duet-postgres -p 5432 -U "$POSTGRES_USER"; do
+                echo "waiting for postgres..."
+                sleep 2
+              done
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: duet-secrets
+                  key: POSTGRES_USER
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      containers:
+        - name: api
+          # Replace with your registry reference, e.g. ghcr.io/your-org/duet-api:0.1.0
+          image: duet-api:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8787
+          envFrom:
+            - configMapRef:
+                name: duet-config
+            - secretRef:
+                name: duet-secrets
+          env:
+            # Overrides after envFrom: the container must bind all interfaces.
+            - name: DUET_HOST
+              value: "0.0.0.0"
+            - name: DUET_PORT
+              value: "8787"
+            - name: DUET_DATA_DIR
+              value: /app/.data
+          startupProbe:
+            # Generous: the first boot creates the schema.
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 3
+            failureThreshold: 20
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /app/.data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: duet-api-data

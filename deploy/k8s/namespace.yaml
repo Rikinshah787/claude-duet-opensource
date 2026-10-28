@@ -1,0 +1,8 @@
+# Namespace for every Claude Duet object. Apply this first.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: claude-duet
+  labels:
+    app.kubernetes.io/part-of: claude-duet
+    app.kubernetes.io/managed-by: kubectl

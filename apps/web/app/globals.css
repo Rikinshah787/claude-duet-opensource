@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------
+   Claude Duet palette. Dark is the default canvas; light mode is
+   derived from the same warm neutrals so the product stays calm and
+   editorial in either theme.
+
+   Colours are stored as raw RGB channels so Tailwind's opacity
+   modifiers (bg-risk-safe/10) resolve correctly against them.
+   --------------------------------------------------------------- */
+:root {
+  color-scheme: dark;
+
+  --canvas: 15 15 14; /* #0F0F0E */
+  --surface: 26 25 23; /* #1A1917 */
+  --raised: 33 31 28; /* #211F1C */
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --text: 245 244 241; /* #F5F4F1 */
+  --text-2: 163 160 150; /* #A3A096 */
+  --text-3: 107 104 98; /* #6B6862 */
+
+  --accent: 217 119 87; /* #D97757 */
+  --accent-ink: 26 25 23;
+
+  --safe: 107 143 113; /* #6B8F71 */
+  --review: 200 155 60; /* #C89B3C */
+  --sensitive: 194 85 63; /* #C2553F */
+  --forbidden: 139 46 31; /* #8B2E1F */
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --canvas: 250 249 246;
+    --surface: 255 255 255;
+    --raised: 243 241 236;
+
+    --border: rgba(15, 15, 14, 0.1);
+    --border-strong: rgba(15, 15, 14, 0.2);
+
+    --text: 31 30 27;
+    --text-2: 95 92 84;
+    --text-3: 138 134 125;
+
+    --accent: 184 92 60;
+    --accent-ink: 255 255 255;
+
+    --safe: 79 114 86;
+    --review: 148 108 21;
+    --sensitive: 168 67 47;
+    --forbidden: 122 37 22;
+  }
+}
+
+/* Dark stays available even where the OS prefers light. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --canvas: 15 15 14;
+  --surface: 26 25 23;
+  --raised: 33 31 28;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text: 245 244 241;
+  --text-2: 163 160 150;
+  --text-3: 107 104 98;
+  --accent: 217 119 87;
+  --accent-ink: 26 25 23;
+  --safe: 107 143 113;
+  --review: 200 155 60;
+  --sensitive: 194 85 63;
+  --forbidden: 139 46 31;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background-color: rgb(var(--canvas));
+    color: rgb(var(--text));
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: ui-serif, Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+    letter-spacing: -0.012em;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+    border-radius: 5px;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+@layer components {
+  /* ---------------------------------------------------------------
+     Brand marks. `lib/brand.ts` resolves a legible mark colour for
+     each theme up front and sets --brand-fg-dark / --brand-fg-light
+     (plus the matching 12% tile tints) on the element. These rules
+     choose the pair, following the same cascade as the palette above
+     so the two themes never disagree.
+     --------------------------------------------------------------- */
+  .brand-tile {
+    color: var(--brand-fg-dark);
+    background-color: var(--brand-bg-dark);
+  }
+
+  .brand-mark {
+    color: var(--brand-fg-dark);
+  }
+
+  @media (prefers-color-scheme: light) {
+    .brand-tile {
+      color: var(--brand-fg-light);
+      background-color: var(--brand-bg-light);
+    }
+
+    .brand-mark {
+      color: var(--brand-fg-light);
+    }
+  }
+
+  :root[data-theme='dark'] .brand-tile {
+    color: var(--brand-fg-dark);
+    background-color: var(--brand-bg-dark);
+  }
+
+  :root[data-theme='dark'] .brand-mark {
+    color: var(--brand-fg-dark);
+  }
+}
+
+@layer utilities {
+  .serif {
+    font-family: ui-serif, Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+  }
+
+  .duet-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  .duet-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .duet-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  .duet-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

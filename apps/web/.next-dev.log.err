@@ -1,0 +1,66 @@
+(node:27912) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Failed to proxy http://127.0.0.1:8787/api/tasks?limit=50 Error: connect ECONNREFUSED 127.0.0.1:8787
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8787) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8787
+}
+Error: connect ECONNREFUSED 127.0.0.1:8787
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8787) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8787
+}
+Failed to proxy http://127.0.0.1:8787/api/tasks?limit=50 Error: connect ECONNREFUSED 127.0.0.1:8787
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8787) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8787
+}
+Error: connect ECONNREFUSED 127.0.0.1:8787
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8787) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8787
+}
+Failed to proxy http://127.0.0.1:8787/api/health Error: connect ECONNREFUSED 127.0.0.1:8787
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8787) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8787
+}
+Error: connect ECONNREFUSED 127.0.0.1:8787
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8787) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8787
+}
+Failed to proxy http://127.0.0.1:8787/api/tasks?limit=50 Error: connect ECONNREFUSED 127.0.0.1:8787
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8787) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8787
+}
+Error: connect ECONNREFUSED 127.0.0.1:8787
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8787) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8787
+}

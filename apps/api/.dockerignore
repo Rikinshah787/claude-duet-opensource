@@ -1,0 +1,13 @@
+.data/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+tests/
+.env
+*.db
+*.db-wal
+*.db-shm
+vault.enc

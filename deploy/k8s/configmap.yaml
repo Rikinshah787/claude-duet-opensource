@@ -1,0 +1,47 @@
+# Non-secret configuration. Every key is a DUET_-prefixed env var read by
+# Settings in apps/api/duet/config.py. Secrets live in secret.example.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: duet-config
+  namespace: claude-duet
+  labels:
+    app.kubernetes.io/name: duet
+    app.kubernetes.io/part-of: claude-duet
+data:
+  # --- core ---
+  DUET_APP_NAME: "Claude Duet"
+  DUET_ENVIRONMENT: "production"
+  DUET_DEBUG: "false"
+  DUET_DATA_DIR: "/app/.data"
+
+  # --- cache / vectors (the database URL carries a password, so it is a Secret) ---
+  DUET_REDIS_URL: "redis://duet-redis:6379/0"
+  DUET_QDRANT_URL: "http://duet-qdrant:6333"
+
+  # --- model layer ---
+  # "heuristic" keeps the deployment self-contained: no model server required.
+  # Point DUET_LLM_BASE_URL at an in-cluster Ollama/vLLM service to switch.
+  DUET_LLM_PROVIDER: "heuristic"
+  DUET_LLM_BASE_URL: "http://ollama:11434"
+  DUET_LLM_MODEL: "qwen2.5:7b-instruct"
+  DUET_LLM_TIMEOUT_S: "120"
+  DUET_LLM_TEMPERATURE: "0.2"
+
+  # --- autonomy ---
+  DUET_SWEEP_INTERVAL_S: "900"
+  DUET_BRIEFING_HOUR: "7"
+  DUET_MAX_PARALLEL_TASKS: "4"
+  DUET_TASK_RETRY_LIMIT: "3"
+
+  # --- safety ---
+  DUET_APPROVAL_EXPIRY_MINUTES: "720"
+  DUET_REDACT_SENSITIVE: "true"
+
+  # --- server ---
+  DUET_HOST: "0.0.0.0"
+  DUET_PORT: "8787"
+  DUET_CORS_ORIGINS: "https://duet.example.com"
+
+  # --- web (consumed by the web Deployment, not by the API) ---
+  NEXT_PUBLIC_API_BASE: "https://duet.example.com"

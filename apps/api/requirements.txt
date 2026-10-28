@@ -1,0 +1,32 @@
+# Claude Duet - API runtime dependencies (Python 3.12)
+# Pinned by minimum: these are the versions the project is developed and tested against.
+# Install:  pip install -r requirements.txt
+
+fastapi>=0.115
+uvicorn[standard]>=0.32
+sqlalchemy>=2.0
+pydantic>=2.9
+pydantic-settings>=2.6
+httpx>=0.27
+python-multipart>=0.0.9
+cryptography>=43.0
+# Windows ships no system tz database, so zoneinfo cannot resolve a name like
+# "America/Los_Angeles" without this. Without it every local-time lookup fell
+# back to UTC and the assistant said "Morning" at five in the afternoon.
+tzdata>=2024.1; sys_platform == "win32"
+
+# --- dev / test (also exposed as the `dev` extra in pyproject.toml) ---
+pytest>=8.3
+pytest-asyncio>=0.24
+
+# -----------------------------------------------------------------------------
+# Optional production extras. Uncomment the block you need; the app degrades
+# gracefully without any of them (SQLite instead of Postgres, in-process event
+# bus instead of Redis, no vector recall, no tracing).
+# Equivalent to:  pip install -e ".[prod]"
+# -----------------------------------------------------------------------------
+# psycopg[binary]>=3.2                        # Postgres driver for DUET_DATABASE_URL=postgresql+psycopg://...
+# redis>=5.2                                  # distributed event bus / cache for DUET_REDIS_URL
+# qdrant-client>=1.12                         # vector store for semantic recall
+# opentelemetry-sdk>=1.29                     # tracing/metrics SDK
+# opentelemetry-instrumentation-fastapi>=0.50b0  # auto-instrument FastAPI request spans

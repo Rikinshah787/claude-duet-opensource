@@ -1,0 +1,83 @@
+# Redis 7 - optional event bus / cache. The API falls back to an in-process bus
+# when DUET_REDIS_URL is unset, so this file is safe to delete.
+# Deliberately ephemeral: nothing stored here is a source of truth.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: duet-redis
+  namespace: claude-duet
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of: claude-duet
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: duet-redis
+  namespace: claude-duet
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of: claude-duet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redis
+        app.kubernetes.io/part-of: claude-duet
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          imagePullPolicy: IfNotPresent
+          # No persistence: an empty cache after a restart is correct behaviour here.
+          args: ["redis-server", "--appendonly", "no", "--save", ""]
+          ports:
+            - name: redis
+              containerPort: 6379
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {}

@@ -1,0 +1,180 @@
+# Claude Duet - full local stack.
+#
+#   docker compose up -d                      # postgres + redis + qdrant + api + web
+#   docker compose --profile local-llm up -d  # ... plus a local Ollama server
+#   docker compose logs -f api
+#   docker compose down -v                    # also drops the named volumes
+#
+# Copy .env.example to .env first: DUET_SECRET_KEY and POSTGRES_PASSWORD are read
+# from there. There is no `version:` key - it is obsolete in Compose v2.
+
+name: claude-duet
+
+services:
+  # ---------------------------------------------------------------------------
+  # Postgres - durable store. The same SQLAlchemy models run on SQLite locally.
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-duet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-duet}
+      POSTGRES_DB: ${POSTGRES_DB:-duet}
+      # Deterministic collation so index ordering matches across hosts.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # api waits on this; without it the first migration races an empty cluster.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-duet} -d ${POSTGRES_DB:-duet}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Redis - optional event bus / cache. Without it the API uses an in-process bus.
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "no"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Qdrant - vector store for semantic recall. 6333 = HTTP/REST, 6334 = gRPC.
+  # ---------------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__LOG_LEVEL: INFO
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # ---------------------------------------------------------------------------
+  # API - FastAPI + uvicorn on 8787. Every setting is a DUET_-prefixed env var
+  # (see apps/api/duet/config.py and .env.example).
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      qdrant:
+        condition: service_started
+    environment:
+      # --- core ---
+      DUET_APP_NAME: ${DUET_APP_NAME:-Claude Duet}
+      DUET_ENVIRONMENT: ${DUET_ENVIRONMENT:-docker}
+      DUET_DEBUG: ${DUET_DEBUG:-false}
+      DUET_DATA_DIR: /app/.data
+      # --- database / cache / vectors ---
+      DUET_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-duet}:${POSTGRES_PASSWORD:-duet}@postgres:5432/${POSTGRES_DB:-duet}
+      DUET_REDIS_URL: redis://redis:6379/0
+      # Reserved for the vector layer; Settings ignores unknown DUET_* vars.
+      DUET_QDRANT_URL: http://qdrant:6333
+      # --- model layer ---
+      # heuristic = deterministic offline planner, no model required.
+      # Switch to `ollama` and start the local-llm profile for real inference.
+      DUET_LLM_PROVIDER: ${DUET_LLM_PROVIDER:-heuristic}
+      DUET_LLM_BASE_URL: ${DUET_LLM_BASE_URL:-http://ollama:11434}
+      DUET_LLM_MODEL: ${DUET_LLM_MODEL:-qwen2.5:7b-instruct}
+      DUET_LLM_API_KEY: ${DUET_LLM_API_KEY:-}
+      DUET_LLM_TIMEOUT_S: ${DUET_LLM_TIMEOUT_S:-120}
+      DUET_LLM_TEMPERATURE: ${DUET_LLM_TEMPERATURE:-0.2}
+      # --- autonomy ---
+      DUET_SWEEP_INTERVAL_S: ${DUET_SWEEP_INTERVAL_S:-900}
+      DUET_BRIEFING_HOUR: ${DUET_BRIEFING_HOUR:-7}
+      DUET_MAX_PARALLEL_TASKS: ${DUET_MAX_PARALLEL_TASKS:-4}
+      DUET_TASK_RETRY_LIMIT: ${DUET_TASK_RETRY_LIMIT:-3}
+      # --- safety ---
+      DUET_APPROVAL_EXPIRY_MINUTES: ${DUET_APPROVAL_EXPIRY_MINUTES:-720}
+      DUET_SECRET_KEY: ${DUET_SECRET_KEY:?set DUET_SECRET_KEY in .env - it encrypts the credential vault}
+      DUET_REDACT_SENSITIVE: ${DUET_REDACT_SENSITIVE:-true}
+      # --- server ---
+      DUET_HOST: 0.0.0.0
+      DUET_PORT: 8787
+      DUET_CORS_ORIGINS: ${DUET_CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+    ports:
+      - "${DUET_PORT:-8787}:8787"
+    volumes:
+      # Credential vault + any local artefacts survive container replacement.
+      - api_data:/app/.data
+
+  # ---------------------------------------------------------------------------
+  # Web - Next.js 15 on 3000. NEXT_PUBLIC_API_BASE is baked in at build time by
+  # next.config.mjs, so it is passed as a build arg *and* as a runtime env var.
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8787}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      # localhost, not `api`: this URL is resolved by the browser, not the container.
+      NEXT_PUBLIC_API_BASE: http://localhost:8787
+      NODE_ENV: production
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  # ---------------------------------------------------------------------------
+  # Ollama - optional local model server. Off by default.
+  #
+  #   docker compose --profile local-llm up -d ollama
+  #   docker compose exec ollama ollama pull qwen2.5:7b-instruct
+  #
+  # Then set DUET_LLM_PROVIDER=ollama in .env and `docker compose up -d api`.
+  # Models land in the `ollama_models` volume, so a pull survives `down`
+  # (but not `down -v`). GPU users: uncomment the `deploy` block below.
+  # ---------------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["local-llm"]
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: ["gpu"]
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  api_data:
+  ollama_models:

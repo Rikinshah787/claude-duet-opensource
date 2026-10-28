@@ -1,0 +1,245 @@
+14:27:53 DEBUG   asyncio: Using proactor: IocpProactor
+INFO:     Started server process [57112]
+INFO:     Waiting for application startup.
+14:27:53 INFO    duet: database ready at sqlite:///C:/CLAUDE-DUET/apps/api/.data/duet.db
+14:27:53 INFO    duet.scheduler: scheduler started (sweep every 900s)
+14:27:53 DEBUG   duet.telemetry: opentelemetry not installed; tracing disabled
+14:27:53 INFO    duet.llm: model layer: auto-detected Claude Code
+14:27:53 INFO    duet: model layer: Claude Code (C:\Users\rikin\.local\bin\claude.EXE) (ready)
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8787 (Press CTRL+C to quit)
+14:29:17 ERROR   duet.monitor: sweep failed for imap
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 84, in _sweep
+    conn = imaplib.IMAP4_SSL(host, port)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1315, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 205, in __init__
+    self.open(host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1328, in open
+    IMAP4.open(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 315, in open
+    self.sock = self._create_socket(timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1318, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 305, in _create_socket
+    return socket.create_connection(address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 865, in create_connection
+    raise exceptions[0]
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 850, in create_connection
+    sock.connect(sa)
+TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 82, in sweep_user
+    new_signals = _sweep_connection(
+                  ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 203, in _sweep_connection
+    raw_signals, cursor = adapter.fetch(ctx)
+                          ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 66, in fetch
+    return get_vault().inject(ctx.credential, run)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\vault.py", line 112, in inject
+    return fn(record["credential"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 64, in run
+    return self._sweep(credential, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 86, in _sweep
+    raise ConnectorError(f"Could not reach IMAP host {host}:{port}: {exc}") from exc
+duet.connectors.live.ConnectorError: Could not reach IMAP host imap.gmail.com:977: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+14:44:17 ERROR   duet.monitor: sweep failed for imap
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 84, in _sweep
+    conn = imaplib.IMAP4_SSL(host, port)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1315, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 205, in __init__
+    self.open(host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1328, in open
+    IMAP4.open(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 315, in open
+    self.sock = self._create_socket(timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1318, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 305, in _create_socket
+    return socket.create_connection(address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 865, in create_connection
+    raise exceptions[0]
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 850, in create_connection
+    sock.connect(sa)
+TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 82, in sweep_user
+    new_signals = _sweep_connection(
+                  ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 203, in _sweep_connection
+    raw_signals, cursor = adapter.fetch(ctx)
+                          ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 66, in fetch
+    return get_vault().inject(ctx.credential, run)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\vault.py", line 112, in inject
+    return fn(record["credential"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 64, in run
+    return self._sweep(credential, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 86, in _sweep
+    raise ConnectorError(f"Could not reach IMAP host {host}:{port}: {exc}") from exc
+duet.connectors.live.ConnectorError: Could not reach IMAP host imap.gmail.com:977: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+14:59:18 ERROR   duet.monitor: sweep failed for imap
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 84, in _sweep
+    conn = imaplib.IMAP4_SSL(host, port)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1315, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 205, in __init__
+    self.open(host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1328, in open
+    IMAP4.open(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 315, in open
+    self.sock = self._create_socket(timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1318, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 305, in _create_socket
+    return socket.create_connection(address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 865, in create_connection
+    raise exceptions[0]
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 850, in create_connection
+    sock.connect(sa)
+TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 82, in sweep_user
+    new_signals = _sweep_connection(
+                  ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 203, in _sweep_connection
+    raw_signals, cursor = adapter.fetch(ctx)
+                          ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 66, in fetch
+    return get_vault().inject(ctx.credential, run)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\vault.py", line 112, in inject
+    return fn(record["credential"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 64, in run
+    return self._sweep(credential, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 86, in _sweep
+    raise ConnectorError(f"Could not reach IMAP host {host}:{port}: {exc}") from exc
+duet.connectors.live.ConnectorError: Could not reach IMAP host imap.gmail.com:977: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+15:14:19 ERROR   duet.monitor: sweep failed for imap
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 84, in _sweep
+    conn = imaplib.IMAP4_SSL(host, port)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1315, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 205, in __init__
+    self.open(host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1328, in open
+    IMAP4.open(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 315, in open
+    self.sock = self._create_socket(timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1318, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 305, in _create_socket
+    return socket.create_connection(address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 865, in create_connection
+    raise exceptions[0]
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 850, in create_connection
+    sock.connect(sa)
+TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 82, in sweep_user
+    new_signals = _sweep_connection(
+                  ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 203, in _sweep_connection
+    raw_signals, cursor = adapter.fetch(ctx)
+                          ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 66, in fetch
+    return get_vault().inject(ctx.credential, run)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\vault.py", line 112, in inject
+    return fn(record["credential"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 64, in run
+    return self._sweep(credential, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 86, in _sweep
+    raise ConnectorError(f"Could not reach IMAP host {host}:{port}: {exc}") from exc
+duet.connectors.live.ConnectorError: Could not reach IMAP host imap.gmail.com:977: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+15:29:19 ERROR   duet.monitor: sweep failed for imap
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 84, in _sweep
+    conn = imaplib.IMAP4_SSL(host, port)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1315, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 205, in __init__
+    self.open(host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1328, in open
+    IMAP4.open(self, host, port, timeout)
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 315, in open
+    self.sock = self._create_socket(timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 1318, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\imaplib.py", line 305, in _create_socket
+    return socket.create_connection(address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 865, in create_connection
+    raise exceptions[0]
+  File "C:\Users\rikin\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 850, in create_connection
+    sock.connect(sa)
+TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 82, in sweep_user
+    new_signals = _sweep_connection(
+                  ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\monitor.py", line 203, in _sweep_connection
+    raw_signals, cursor = adapter.fetch(ctx)
+                          ^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 66, in fetch
+    return get_vault().inject(ctx.credential, run)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\core\vault.py", line 112, in inject
+    return fn(record["credential"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 64, in run
+    return self._sweep(credential, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\CLAUDE-DUET\apps\api\duet\connectors\live\imap_mail.py", line 86, in _sweep
+    raise ConnectorError(f"Could not reach IMAP host {host}:{port}: {exc}") from exc
+duet.connectors.live.ConnectorError: Could not reach IMAP host imap.gmail.com:977: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond

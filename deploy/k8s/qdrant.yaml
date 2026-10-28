@@ -1,0 +1,103 @@
+# Qdrant - vector store for semantic recall. 6333 = HTTP/REST, 6334 = gRPC.
+# A StatefulSet, because the collections on disk are worth keeping across restarts.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: duet-qdrant
+  namespace: claude-duet
+  labels:
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/part-of: claude-duet
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: qdrant
+  ports:
+    - name: http
+      port: 6333
+      targetPort: http
+    - name: grpc
+      port: 6334
+      targetPort: grpc
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: duet-qdrant
+  namespace: claude-duet
+  labels:
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/part-of: claude-duet
+spec:
+  serviceName: duet-qdrant
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qdrant
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: qdrant
+        app.kubernetes.io/part-of: claude-duet
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: qdrant
+          image: qdrant/qdrant:v1.12.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 6333
+            - name: grpc
+              containerPort: 6334
+          env:
+            - name: QDRANT__SERVICE__HTTP_PORT
+              value: "6333"
+            - name: QDRANT__SERVICE__GRPC_PORT
+              value: "6334"
+            - name: QDRANT__LOG_LEVEL
+              value: "INFO"
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 4
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: storage
+              mountPath: /qdrant/storage
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi

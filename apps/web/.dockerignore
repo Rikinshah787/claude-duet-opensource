@@ -1,0 +1,45 @@
+# Never ship local build output, deps or secrets into the image context.
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Python / API artifacts (in case the context is ever widened)
+.venv/
+__pycache__/
+*.pyc
+
+# Local data & secrets
+.data/
+*.db
+*.db-wal
+*.db-shm
+vault.enc
+.env
+.env.*
+!.env.example
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.cache/
+.turbo/
+.eslintcache
+*.tsbuildinfo
+
+# VCS / editors / OS
+.git/
+.gitignore
+.github/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Container / docs noise
+Dockerfile
+.dockerignore
+README.md
+*.log
+npm-debug.log*
